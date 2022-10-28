@@ -1,7 +1,7 @@
 use futures::stream::TryStreamExt;
+use mongodb::bson::doc;
 use mongodb::bson::oid::ObjectId;
 use mongodb::Database;
-use mongodb::{bson::doc, options::FindOptions};
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 
@@ -24,14 +24,21 @@ pub fn get_all_projects<'a>() -> Json<Project<'a>> {
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub struct Contractor<'a> {
-    pub name: &'a str,
+pub struct Contractor {
+    pub name: String,
+    pub _id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
+pub struct ContractorDocument {
+    pub name: String,
     pub _id: ObjectId,
 }
 
 #[get("/projects/get-one")]
-pub async fn get_one(db: Database) -> mongodb::error::Result<Vec<Contractor>> {
-    let collection = db.collection("contractors");
+pub async fn get_one(db: &Database) -> mongodb::error::Result<Vec<Contractor>> {
+    let collection = db.collection::<ContractorDocument>("contractors");
     let mut cursor = collection.find(None, None).await?;
 
     let mut contractors: Vec<Contractor> = vec![];
