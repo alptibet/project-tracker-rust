@@ -13,3 +13,6 @@ fn rocket() -> _ {
     dotenv().ok();
     rocket::build().attach(db::init()).mount("/api", routes![get_all_projects, get_one])
 }
+
+
+//deneme denem
