@@ -22,6 +22,6 @@ pub async fn get_one_contractor(
     let oid = ObjectId::parse_str(&_id).unwrap(); // Must handle error here parse_str returns a result
     match contractor::find_one_contractor(&db, oid).await {
         Ok(_contractor_doc) => Ok(Json((_contractor_doc).unwrap())), //Must also handle error here as doc can be none
-        Err(_error) => Err("Could not get contractor"),
+        Err(_error) => Err("Could not get contractor"),// Also implement own error handling
     }
 }
