@@ -15,5 +15,5 @@ fn rocket() -> _ {
     dotenv().ok();
     rocket::build()
         .attach(db::init())
-        .mount("/api", routes![get_contractors])
+        .mount("/api", routes![get_contractors, get_one_contractor])
 }

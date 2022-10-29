@@ -1,4 +1,6 @@
 use futures::stream::TryStreamExt;
+use mongodb::bson::doc;
+use mongodb::bson::oid::ObjectId;
 use mongodb::Database;
 
 use crate::models::contractor::Contractor;
@@ -20,4 +22,23 @@ pub async fn find_contractors(db: &Database) -> mongodb::error::Result<Vec<Contr
     }
 
     Ok(contractors)
+}
+
+pub async fn find_one_contractor(
+    db: &Database,
+    oid: ObjectId,
+) -> mongodb::error::Result<Option<Contractor>> {
+    let collection = db.collection::<ContractorDocument>("contractors");
+
+    let contractor_doc = collection.find_one(doc! {"_id":oid}, None).await?;
+    if contractor_doc.is_none() {
+        return Ok(None);
+    }
+    let unwrapped_doc = contractor_doc.unwrap();
+    let contractor_json = Contractor {
+        _id: unwrapped_doc._id.to_string(),
+        name: unwrapped_doc.name.to_string(),
+    };
+
+    Ok(Some(contractor_json))
 }
