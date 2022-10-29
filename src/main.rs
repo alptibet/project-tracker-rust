@@ -3,15 +3,17 @@ use dotenv::dotenv;
 #[macro_use]
 extern crate rocket;
 
+mod controllers;
 mod db;
+mod models;
 mod routes;
 
-use routes::projects::*;
+use routes::contractors::*;
 
 #[launch]
 fn rocket() -> _ {
     dotenv().ok();
     rocket::build()
         .attach(db::init())
-        .mount("/api", routes![get_all_projects, get_one])
+        .mount("/api", routes![get_contractors])
 }
