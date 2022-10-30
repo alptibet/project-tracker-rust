@@ -20,15 +20,15 @@ pub async fn get_one_contractor(
     db: &State<Database>,
     _id: String,
 ) -> Result<Json<Contractor>, AppError> {
-    let oid = match ObjectId::parse_str(&_id){
+    let oid = match ObjectId::parse_str(&_id) {
         Ok(_oid) => Ok(_oid),
-        Err(_err) => Err(AppError::build(400))
+        Err(_err) => Err(AppError::build(400)),
     };
-    
+
     match contractor::find_one_contractor(&db, oid?).await {
-        Ok(_contractor_doc) =>{
+        Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
-              return Err(AppError::build(404));
+                return Err(AppError::build(404));
             }
             Ok(Json(_contractor_doc.unwrap()))
         }
