@@ -1,10 +1,12 @@
 use futures::stream::TryStreamExt;
-use mongodb::bson::doc;
 use mongodb::bson::oid::ObjectId;
+use mongodb::bson::{doc, Document};
 use mongodb::Database;
+use rocket::serde::json::Json;
 
 use crate::models::contractor::Contractor;
 use crate::models::contractor::ContractorDocument;
+use crate::models::contractor::ContractorInput;
 
 pub async fn find_contractors(db: &Database) -> mongodb::error::Result<Vec<Contractor>> {
     let collection = db.collection::<ContractorDocument>("contractors");
@@ -41,4 +43,15 @@ pub async fn find_one_contractor(
     };
 
     Ok(Some(contractor_json))
+}
+
+pub async fn insert_contractor(
+    db: &Database,
+    input: Json<ContractorInput>,
+) -> mongodb::error::Result<String> {
+    let collection = db.collection::<Document>("contractors");
+    let contractor_document = doc! {"name": &input.name};
+    let insert_one_result = collection.insert_one(contractor_document, None).await?;
+
+    Ok(insert_one_result.inserted_id.to_string())
 }

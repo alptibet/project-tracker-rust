@@ -6,6 +6,7 @@ use rocket::State;
 use crate::controllers::contractor;
 use crate::errors::apperror::AppError;
 use crate::models::contractor::Contractor;
+use crate::models::contractor::ContractorInput;
 
 #[get("/get-all")]
 pub async fn get_contractors(db: &State<Database>) -> Result<Json<Vec<Contractor>>, &'static str> {
@@ -36,4 +37,13 @@ pub async fn get_one_contractor(
     }
 }
 
-// #[post("/")]
+#[post("/", data = "<input>")]
+pub async fn insert_contractor(
+    db: &State<Database>,
+    input: Json<ContractorInput>,
+) -> Result<Json<String>, AppError> {
+    match contractor::insert_contractor(&db, input).await {
+        Ok(_contractor_id) => Ok(Json(_contractor_id)),
+        Err(_error) => Err(AppError::build(400)),
+    }
+}
