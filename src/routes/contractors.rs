@@ -7,7 +7,7 @@ use crate::controllers::contractor;
 use crate::errors::apperror::AppError;
 use crate::models::contractor::Contractor;
 
-#[get("/contractors/get-all")]
+#[get("/get-all")]
 pub async fn get_contractors(db: &State<Database>) -> Result<Json<Vec<Contractor>>, &'static str> {
     match contractor::find_contractors(&db).await {
         Ok(_contractor_doc) => Ok(Json(_contractor_doc)),
@@ -15,7 +15,7 @@ pub async fn get_contractors(db: &State<Database>) -> Result<Json<Vec<Contractor
     }
 }
 
-#[get("/contractors/<_id>")]
+#[get("/<_id>")]
 pub async fn get_one_contractor(
     db: &State<Database>,
     _id: String,
@@ -35,3 +35,5 @@ pub async fn get_one_contractor(
         Err(_error) => Err(AppError::build(404)),
     }
 }
+
+// #[post("/")]
