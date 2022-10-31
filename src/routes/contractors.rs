@@ -49,19 +49,22 @@ pub async fn insert_one_contractor(
 }
 
 #[delete("/<_id>")]
-pub async fn delete_one_contractor(db: &State<Database>, _id:String) -> Result<Json<String>, AppError>{
+pub async fn delete_one_contractor(
+    db: &State<Database>,
+    _id: String,
+) -> Result<Json<String>, AppError> {
     let oid = match ObjectId::parse_str(&_id) {
         Ok(_oid) => Ok(_oid),
-        Err(_error) => Err(AppError::build(400))
+        Err(_error) => Err(AppError::build(400)),
     };
 
     match contractor::delete_contractor(&db, oid?).await {
         Ok(_contractor_doc) => {
-            if _contractor_doc.is_none(){
-                return Err(AppError::build(404))
+            if _contractor_doc.is_none() {
+                return Err(AppError::build(404));
             }
             Ok(Json(_contractor_doc.unwrap()))
-        },
-        Err(_error) => Err(AppError::build(400))
+        }
+        Err(_error) => Err(AppError::build(400)),
     }
 }

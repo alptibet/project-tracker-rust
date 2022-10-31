@@ -53,18 +53,23 @@ pub async fn insert_contractor(
     let contractor_document = doc! {"name": &input.name};
     let insert_one_result = collection.insert_one(contractor_document, None).await?;
     let contractor_name = &input.name.to_string();
-    let contractor_json = Contractor{
-        _id:insert_one_result.inserted_id.to_string(),
-        name:contractor_name.to_string(),
+    let contractor_json = Contractor {
+        _id: insert_one_result.inserted_id.to_string(),
+        name: contractor_name.to_string(),
     };
     Ok(contractor_json)
 }
 
-pub async fn delete_contractor(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<String>>{
+pub async fn delete_contractor(
+    db: &Database,
+    oid: ObjectId,
+) -> mongodb::error::Result<Option<String>> {
     //do something
     let collection = db.collection::<Document>("contractors");
-    let contractor_doc  = collection.find_one_and_delete(doc!{"_id": oid}, None).await?;
-    if contractor_doc.is_none(){
+    let contractor_doc = collection
+        .find_one_and_delete(doc! {"_id": oid}, None)
+        .await?;
+    if contractor_doc.is_none() {
         return Ok(None);
     }
     Ok(Some("Document deleted".to_string()))
