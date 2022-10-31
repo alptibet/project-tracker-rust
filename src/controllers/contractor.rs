@@ -48,10 +48,14 @@ pub async fn find_one_contractor(
 pub async fn insert_contractor(
     db: &Database,
     input: Json<ContractorInput>,
-) -> mongodb::error::Result<String> {
+) -> mongodb::error::Result<Contractor> {
     let collection = db.collection::<Document>("contractors");
     let contractor_document = doc! {"name": &input.name};
     let insert_one_result = collection.insert_one(contractor_document, None).await?;
-
-    Ok(insert_one_result.inserted_id.to_string())
+    let contractor_name = &input.name.to_string();
+    let contractor_json = Contractor{
+        _id:insert_one_result.inserted_id.to_string(),
+        name:contractor_name.to_string(),
+    };
+    Ok(contractor_json)
 }

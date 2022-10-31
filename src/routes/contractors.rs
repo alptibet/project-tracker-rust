@@ -41,7 +41,7 @@ pub async fn get_one_contractor(
 pub async fn insert_contractor(
     db: &State<Database>,
     input: Json<ContractorInput>,
-) -> Result<Json<String>, AppError> {
+) -> Result<Json<Contractor>, AppError> {
     match contractor::insert_contractor(&db, input).await {
         Ok(_contractor_id) => Ok(Json(_contractor_id)),
         Err(_error) => Err(AppError::build(400)),
