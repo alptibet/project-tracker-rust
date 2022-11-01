@@ -65,6 +65,28 @@ pub async fn delete_one_contractor(
             }
             Ok(Json(_contractor_doc.unwrap()))
         }
+        Err(_error) => Err(AppError::build(404)),
+    }
+}
+
+#[patch("/<_id>", data = "<input>")]
+pub async fn update_one_contractor(
+    db: &State<Database>,
+    _id: String,
+    input: Json<ContractorInput>,
+) -> Result<Json<Contractor>, AppError> {
+    let oid = match ObjectId::parse_str(&_id) {
+        Ok(_oid) => Ok(_oid),
         Err(_error) => Err(AppError::build(400)),
+    };
+
+    match contractor::update_contractor(&db, oid?, input).await {
+        Ok(_contractor_doc) => {
+            if _contractor_doc.is_none() {
+                return Err(AppError::build(404));
+            }
+            Ok(Json(_contractor_doc.unwrap()))
+        }
+        Err(_error) => Err(AppError::build(404)),
     }
 }

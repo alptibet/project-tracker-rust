@@ -20,7 +20,8 @@ fn rocket() -> _ {
             get_contractors,
             get_one_contractor,
             insert_one_contractor,
-            delete_one_contractor
+            delete_one_contractor,
+            update_one_contractor
         ],
     )
 }
