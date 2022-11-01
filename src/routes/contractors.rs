@@ -21,11 +21,7 @@ pub async fn get_one_contractor(
     db: &State<Database>,
     _id: String,
 ) -> Result<Json<Contractor>, AppError> {
-    let oid = match ObjectId::parse_str(&_id) {
-        Ok(_oid) => Ok(_oid),
-        Err(_err) => Err(AppError::build(400)),
-    };
-
+    let oid = parse_oid(_id);
     match contractor::find_one_contractor(&db, oid?).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
@@ -53,11 +49,7 @@ pub async fn delete_one_contractor(
     db: &State<Database>,
     _id: String,
 ) -> Result<Json<String>, AppError> {
-    let oid = match ObjectId::parse_str(&_id) {
-        Ok(_oid) => Ok(_oid),
-        Err(_error) => Err(AppError::build(400)),
-    };
-
+    let oid = parse_oid(_id);
     match contractor::delete_contractor(&db, oid?).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
@@ -75,11 +67,7 @@ pub async fn update_one_contractor(
     _id: String,
     input: Json<ContractorInput>,
 ) -> Result<Json<Contractor>, AppError> {
-    let oid = match ObjectId::parse_str(&_id) {
-        Ok(_oid) => Ok(_oid),
-        Err(_error) => Err(AppError::build(400)),
-    };
-
+    let oid = parse_oid(_id);
     match contractor::update_contractor(&db, oid?, input).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
@@ -88,5 +76,13 @@ pub async fn update_one_contractor(
             Ok(Json(_contractor_doc.unwrap()))
         }
         Err(_error) => Err(AppError::build(404)),
+    }
+}
+
+fn parse_oid(_id: String) -> Result<ObjectId, AppError> {
+    let oid = ObjectId::parse_str(&_id);
+    match oid {
+        Ok(_oid) => Ok(_oid),
+        Err(_error) => Err(AppError::build(400)),
     }
 }
