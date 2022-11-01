@@ -66,7 +66,6 @@ pub async fn delete_contractor(
     db: &Database,
     oid: ObjectId,
 ) -> mongodb::error::Result<Option<String>> {
-    //do something
     let collection = db.collection::<Document>("contractors");
     let contractor_doc = collection
         .find_one_and_delete(doc! {"_id": oid}, None)
