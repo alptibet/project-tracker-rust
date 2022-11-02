@@ -7,6 +7,7 @@ use crate::controllers::contractor;
 use crate::errors::apperror::AppError;
 use crate::models::contractor::Contractor;
 use crate::models::contractor::ContractorInput;
+use crate::models::response::Response;
 
 #[get("/get-all")]
 pub async fn get_contractors(db: &State<Database>) -> Result<Json<Vec<Contractor>>, AppError> {
