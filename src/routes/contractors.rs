@@ -5,14 +5,18 @@ use rocket::State;
 
 use crate::controllers::contractor;
 use crate::errors::apperror::AppError;
-use crate::models::contractor::Contractor;
 use crate::models::contractor::ContractorInput;
-use crate::models::response::Response;
+use crate::models::response::MessageResponse;
+use crate::models::response::DocVecResponse;
+use crate::models::response::DocResponse;
 
 #[get("/get-all")]
-pub async fn get_contractors(db: &State<Database>) -> Result<Json<Vec<Contractor>>, AppError> {
+pub async fn get_contractors(db: &State<Database>) -> Result<Json<DocVecResponse>, AppError> {
     match contractor::find_contractors(&db).await {
-        Ok(_contractor_doc) => Ok(Json(_contractor_doc)),
+        Ok(_contractor_doc) => Ok(Json(DocVecResponse{
+            message:"success".to_string(),
+            data: _contractor_doc,
+        })),
         Err(_error) => Err(AppError::build(404)),
     }
 }
@@ -21,14 +25,17 @@ pub async fn get_contractors(db: &State<Database>) -> Result<Json<Vec<Contractor
 pub async fn get_one_contractor(
     db: &State<Database>,
     _id: String,
-) -> Result<Json<Contractor>, AppError> {
+) -> Result<Json<DocResponse>, AppError> {
     let oid = parse_oid(_id);
     match contractor::find_one_contractor(&db, oid?).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
             }
-            Ok(Json(_contractor_doc.unwrap()))
+            Ok(Json(DocResponse{
+                message:"success".to_string(),
+                data:_contractor_doc.unwrap(),
+            }))
         }
         Err(_error) => Err(AppError::build(404)),
     }
@@ -38,9 +45,12 @@ pub async fn get_one_contractor(
 pub async fn insert_one_contractor(
     db: &State<Database>,
     input: Json<ContractorInput>,
-) -> Result<Json<Contractor>, AppError> {
+) -> Result<Json<DocResponse>, AppError> {
     match contractor::insert_contractor(&db, input).await {
-        Ok(_contractor_id) => Ok(Json(_contractor_id)),
+        Ok(_contractor_doc) => Ok(Json(DocResponse{
+            message:"success".to_string(),
+            data: _contractor_doc,
+        })),
         Err(_error) => Err(AppError::build(400)),
     }
 }
@@ -49,14 +59,16 @@ pub async fn insert_one_contractor(
 pub async fn delete_one_contractor(
     db: &State<Database>,
     _id: String,
-) -> Result<Json<String>, AppError> {
+) -> Result<Json<MessageResponse>, AppError> {
     let oid = parse_oid(_id);
     match contractor::delete_contractor(&db, oid?).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
             }
-            Ok(Json(_contractor_doc.unwrap()))
+            Ok(Json(MessageResponse{
+                message:"success".to_string(),
+            }))
         }
         Err(_error) => Err(AppError::build(404)),
     }
@@ -67,14 +79,17 @@ pub async fn update_one_contractor(
     db: &State<Database>,
     _id: String,
     input: Json<ContractorInput>,
-) -> Result<Json<Contractor>, AppError> {
+) -> Result<Json<DocResponse>, AppError> {
     let oid = parse_oid(_id);
     match contractor::update_contractor(&db, oid?, input).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
             }
-            Ok(Json(_contractor_doc.unwrap()))
+            Ok(Json(DocResponse{
+                message:"success".to_string(),
+                data: _contractor_doc.unwrap(),
+            }))
         }
         Err(_error) => Err(AppError::build(404)),
     }
