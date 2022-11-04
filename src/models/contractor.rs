@@ -1,7 +1,6 @@
 use mongodb::bson::oid::ObjectId;
 use rocket::serde::{Deserialize, Serialize};
 
-#[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Contractor {
@@ -9,7 +8,6 @@ pub struct Contractor {
     pub name: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct ContractorDocument {
@@ -17,7 +15,6 @@ pub struct ContractorDocument {
     pub name: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct ContractorInput {

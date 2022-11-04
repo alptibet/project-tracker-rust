@@ -1,1 +1,2 @@
-pub mod contractors;
+pub mod contractor;
+pub mod user;
