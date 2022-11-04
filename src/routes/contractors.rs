@@ -6,15 +6,15 @@ use rocket::State;
 use crate::controllers::contractor;
 use crate::errors::apperror::AppError;
 use crate::models::contractor::ContractorInput;
-use crate::models::response::MessageResponse;
-use crate::models::response::DocVecResponse;
 use crate::models::response::DocResponse;
+use crate::models::response::DocVecResponse;
+use crate::models::response::MessageResponse;
 
 #[get("/get-all")]
 pub async fn get_contractors(db: &State<Database>) -> Result<Json<DocVecResponse>, AppError> {
     match contractor::find_contractors(&db).await {
-        Ok(_contractor_doc) => Ok(Json(DocVecResponse{
-            message:"success".to_string(),
+        Ok(_contractor_doc) => Ok(Json(DocVecResponse {
+            message: "success".to_string(),
             data: _contractor_doc,
         })),
         Err(_error) => Err(AppError::build(404)),
@@ -32,9 +32,9 @@ pub async fn get_one_contractor(
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
             }
-            Ok(Json(DocResponse{
-                message:"success".to_string(),
-                data:_contractor_doc.unwrap(),
+            Ok(Json(DocResponse {
+                message: "success".to_string(),
+                data: _contractor_doc.unwrap(),
             }))
         }
         Err(_error) => Err(AppError::build(404)),
@@ -47,11 +47,14 @@ pub async fn insert_one_contractor(
     input: Json<ContractorInput>,
 ) -> Result<Json<DocResponse>, AppError> {
     match contractor::insert_contractor(&db, input).await {
-        Ok(_contractor_doc) => Ok(Json(DocResponse{
-            message:"success".to_string(),
+        Ok(_contractor_doc) => Ok(Json(DocResponse {
+            message: "success".to_string(),
             data: _contractor_doc,
         })),
-        Err(_error) => Err(AppError::build(400)),
+        Err(_error) => {
+            println!("{_error}");
+            Err(AppError::build(400))
+        }
     }
 }
 
@@ -66,8 +69,8 @@ pub async fn delete_one_contractor(
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
             }
-            Ok(Json(MessageResponse{
-                message:"success".to_string(),
+            Ok(Json(MessageResponse {
+                message: "success".to_string(),
             }))
         }
         Err(_error) => Err(AppError::build(404)),
@@ -86,8 +89,8 @@ pub async fn update_one_contractor(
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
             }
-            Ok(Json(DocResponse{
-                message:"success".to_string(),
+            Ok(Json(DocResponse {
+                message: "success".to_string(),
                 data: _contractor_doc.unwrap(),
             }))
         }
