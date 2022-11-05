@@ -8,6 +8,7 @@ use crate::models::contractor::Contractor;
 //     pub message: String,
 //     pub data: Vec<Contractor>,
 // }
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct VecResponse<T> {
@@ -17,9 +18,9 @@ pub struct VecResponse<T> {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub struct DocResponse {
+pub struct DocResponse<T> {
     pub message: String,
-    pub data: Contractor,
+    pub data: T,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

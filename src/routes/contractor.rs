@@ -26,7 +26,7 @@ pub async fn get_contractors(db: &State<Database>) -> Result<Json<VecResponse<Co
 pub async fn get_one_contractor(
     db: &State<Database>,
     _id: String,
-) -> Result<Json<DocResponse>, AppError> {
+) -> Result<Json<DocResponse<Contractor>>, AppError> {
     let oid = parse_oid(_id);
     match contractor::find_one_contractor(&db, oid?).await {
         Ok(_contractor_doc) => {
@@ -46,7 +46,7 @@ pub async fn get_one_contractor(
 pub async fn insert_one_contractor(
     db: &State<Database>,
     input: Json<ContractorInput>,
-) -> Result<Json<DocResponse>, AppError> {
+) -> Result<Json<DocResponse<Contractor>>, AppError> {
     match contractor::insert_contractor(&db, input).await {
         Ok(_contractor_doc) => Ok(Json(DocResponse {
             message: "success".to_string(),
@@ -83,7 +83,7 @@ pub async fn update_one_contractor(
     db: &State<Database>,
     _id: String,
     input: Json<ContractorInput>,
-) -> Result<Json<DocResponse>, AppError> {
+) -> Result<Json<DocResponse<Contractor>>, AppError> {
     let oid = parse_oid(_id);
     match contractor::update_contractor(&db, oid?, input).await {
         Ok(_contractor_doc) => {
