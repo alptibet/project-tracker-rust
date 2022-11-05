@@ -2,13 +2,13 @@ use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
 use rocket::serde::{Deserialize, Serialize};
 
-// #[derive(Debug, Serialize, Deserialize)]
-// #[serde(crate = "rocket::serde")]
-// pub enum UserRole{
-//     User,
-//     Admin,
-//     Superuser,
-// }
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
+pub enum UserRole{
+    User,
+    Admin,
+    Superuser,
+}
 
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
@@ -37,5 +37,5 @@ pub struct UserDocument {
     pub active: bool,
     pub password: String,
     pub passwordChangeAt: DateTime,
-    pub role: String,
+    pub role: UserRole,
 }
