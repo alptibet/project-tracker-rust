@@ -7,13 +7,14 @@ use crate::controllers::contractor;
 use crate::errors::apperror::AppError;
 use crate::models::contractor::ContractorInput;
 use crate::models::response::DocResponse;
-use crate::models::response::DocVecResponse;
 use crate::models::response::MessageResponse;
+use crate::models::response::VecResponse;
+use crate::models::contractor::Contractor;
 
 #[get("/get-all")]
-pub async fn get_contractors(db: &State<Database>) -> Result<Json<DocVecResponse>, AppError> {
+pub async fn get_contractors(db: &State<Database>) -> Result<Json<VecResponse<Contractor>>, AppError> {
     match contractor::find_contractors(&db).await {
-        Ok(_contractor_doc) => Ok(Json(DocVecResponse {
+        Ok(_contractor_doc) => Ok(Json(VecResponse {
             message: "success".to_string(),
             data: _contractor_doc,
         })),
