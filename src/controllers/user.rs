@@ -1,9 +1,8 @@
+use bcrypt::hash;
 use futures::stream::TryStreamExt;
 use mongodb::bson::{doc, DateTime, Document};
-use mongodb::options::FindOptions;
 use mongodb::Database;
 use rocket::serde::json::Json;
-use bcrypt::hash;
 
 use crate::models::user::User;
 use crate::models::user::UserDocument;
@@ -12,10 +11,7 @@ use crate::models::user::UserRole;
 
 pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
     let collection = db.collection::<UserDocument>("users");
-    let find_options = FindOptions::builder()
-        .projection(doc! {"passwordConfirm": 0})
-        .build();
-    let mut cursor = collection.find(None, find_options).await?;
+    let mut cursor = collection.find(None, None).await?;
     let mut users: Vec<User> = vec![];
 
     while let Some(result) = cursor.try_next().await? {
@@ -34,7 +30,7 @@ pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
             surname: surname.to_string(),
             username: username.to_string(),
             email: email.to_string(),
-            active:active.to_string(),
+            active: active.to_string(),
             password: password.to_string(),
             passwordChangeAt: password_change_at.to_string(),
             role: match userrole {
@@ -51,7 +47,7 @@ pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
 
 pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::error::Result<User> {
     let collection = db.collection::<Document>("users");
-    let password_created_at:DateTime =DateTime::now(); 
+    let password_created_at: DateTime = DateTime::now();
     let hashed_password = hash(&input.password, 12).unwrap();
     let user_document = doc! {
         "name": &input.name,
@@ -79,10 +75,10 @@ pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::erro
         name: name.to_string(),
         surname: surname.to_string(),
         username: username.to_string(),
-        email:email.to_string(),
+        email: email.to_string(),
         active: active.to_string(),
         password: password.to_string(),
-        passwordChangeAt:password_created_at.to_string(),
+        passwordChangeAt: password_created_at.to_string(),
         role: role.to_string(),
     };
     Ok(user_json)
