@@ -19,7 +19,7 @@ pub struct User {
     pub surname: String,
     pub username: String,
     pub email: String,
-    pub active: bool,
+    pub active: String,
     pub password: String,
     pub passwordChangeAt: String,
     pub role: String,
@@ -38,4 +38,16 @@ pub struct UserDocument {
     pub password: String,
     pub passwordChangeAt: DateTime,
     pub role: UserRole,
+}
+
+#[allow(non_snake_case)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
+pub struct UserInput {
+    pub name: String,
+    pub surname: String,
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub passwordConfirm:String,
 }
