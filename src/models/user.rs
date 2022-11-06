@@ -4,7 +4,7 @@ use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-pub enum UserRole{
+pub enum UserRole {
     User,
     Admin,
     Superuser,
@@ -49,5 +49,5 @@ pub struct UserInput {
     pub username: String,
     pub email: String,
     pub password: String,
-    pub passwordConfirm:String,
+    pub passwordConfirm: String,
 }
