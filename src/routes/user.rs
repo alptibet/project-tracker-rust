@@ -30,4 +30,4 @@ pub async fn signup(db: &State<Database>, input:Json<UserInput>) -> Result<Json<
         })),
         Err(_error) => Err(AppError::build(400))
     }
-}
+}// also send jwt token
