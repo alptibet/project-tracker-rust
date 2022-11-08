@@ -1,8 +1,17 @@
 use jsonwebtoken::crypto::sign;
 use jsonwebtoken::{Algorithm, EncodingKey};
+use rocket::http::Cookie;
 use std::env;
 
-fn signToken(_id: &str) -> Result<String, ()> {
+pub fn create_send_token<'a>(_id: &str) -> Cookie<'a> {
+    Cookie::build("token", sign_token(_id))
+        .path("/")
+        .secure(false)
+        .http_only(true)
+        .finish()
+}
+
+pub fn sign_token(_id: &str) -> String {
     let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
     let result = sign(
         _id.as_bytes(),
@@ -10,5 +19,5 @@ fn signToken(_id: &str) -> Result<String, ()> {
         Algorithm::HS256,
     )
     .unwrap();
-    Ok(result)
+    result
 }
