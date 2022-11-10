@@ -19,7 +19,7 @@ pub async fn get_users(db: &State<Database>) -> Result<Json<VecResponse<User>>, 
         })),
         Err(_error) => {
             println!("{_error}");
-            Err(AppError::build(404))
+            Err(AppError::build(400))
         }
     }
 }
