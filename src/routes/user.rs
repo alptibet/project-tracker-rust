@@ -1,7 +1,7 @@
 use mongodb::Database;
 use rocket::http::CookieJar;
 use rocket::serde::json::Json;
-use rocket::{Request, State};
+use rocket::State;
 
 use crate::controllers::auth::create_send_token;
 use crate::controllers::user;
@@ -12,7 +12,6 @@ use crate::models::user::UserInput;
 
 #[get("/get-all")]
 pub async fn get_users(db: &State<Database>) -> Result<Json<VecResponse<User>>, AppError> {
-    Request::headers().get_one("token");
     match user::find_users(&db).await {
         Ok(_user_doc) => Ok(Json(VecResponse {
             message: "success".to_string(),
