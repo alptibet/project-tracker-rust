@@ -53,7 +53,7 @@ pub async fn login(
     cookies: &CookieJar<'_>,
 ) -> Result<Json<DocResponse<AuthInfo>>, AppError> {
     //get user with user name
-    match user::find_auth_info(&db, &input.username).await {
+    let user = match user::find_auth_info(&db, &input.username).await {
         Ok(_auth_info) => {
             if _auth_info.is_none() {
                 return Err(AppError::build(404));
@@ -64,7 +64,9 @@ pub async fn login(
             }))
         }
         Err(_error) => Err(AppError::build(400)),
-    }
+    };
+    println!("{:?}", user);
+    user
     //get his hashed password
     //hash the input password and compare if passwords are correct
     //send cookie

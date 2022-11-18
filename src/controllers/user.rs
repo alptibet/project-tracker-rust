@@ -94,7 +94,7 @@ pub async fn find_auth_info(db: &Database, username:&str) -> mongodb::error::Res
     let unwrapped_doc = user_doc.unwrap();
     let auth_info = AuthInfo{
         _id: unwrapped_doc._id.to_string(),
-        password: unwrapped_doc.name.to_string(),
+        password: unwrapped_doc.password.to_string(),
     };
 
     Ok(Some(auth_info))
