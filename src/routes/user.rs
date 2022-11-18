@@ -7,6 +7,8 @@ use crate::controllers::auth::create_send_token;
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
 use crate::models::response::{DocResponse, VecResponse};
+use crate::models::user::AuthInfo;
+use crate::models::user::LoginInput;
 use crate::models::user::User;
 use crate::models::user::UserInput;
 
@@ -42,4 +44,28 @@ pub async fn signup(
         }
         Err(_error) => Err(AppError::build(400)),
     }
+}
+
+#[post("/login", data = "<input>")]
+pub async fn login(
+    db: &State<Database>,
+    input: Json<LoginInput>,
+    cookies: &CookieJar<'_>,
+) -> Result<Json<DocResponse<AuthInfo>>, AppError> {
+    //get user with user name
+    match user::find_auth_info(&db, &input.username).await {
+        Ok(_auth_info) => {
+            if _auth_info.is_none() {
+                return Err(AppError::build(404));
+            }
+            Ok(Json(DocResponse {
+                message: "Success".to_string(),
+                data: _auth_info.unwrap(),
+            }))
+        }
+        Err(_error) => Err(AppError::build(400)),
+    }
+    //get his hashed password
+    //hash the input password and compare if passwords are correct
+    //send cookie
 }

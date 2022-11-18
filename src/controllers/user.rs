@@ -8,6 +8,7 @@ use crate::models::user::User;
 use crate::models::user::UserDocument;
 use crate::models::user::UserInput;
 use crate::models::user::UserRole;
+use crate::models::user::AuthInfo;
 
 pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
     let collection = db.collection::<UserDocument>("users");
@@ -82,4 +83,19 @@ pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::erro
         role: role.to_string(),
     };
     Ok(user_json)
+}
+
+pub async fn find_auth_info(db: &Database, username:&str) -> mongodb::error::Result<Option<AuthInfo>> {
+    let collection = db.collection::<UserDocument>("users");
+    let user_doc = collection.find_one(doc! {"username":username}, None).await?;
+    if user_doc.is_none() {
+        return Ok(None);
+    }
+    let unwrapped_doc = user_doc.unwrap();
+    let auth_info = AuthInfo{
+        _id: unwrapped_doc._id.to_string(),
+        password: unwrapped_doc.name.to_string(),
+    };
+
+    Ok(Some(auth_info))
 }
