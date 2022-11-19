@@ -4,7 +4,7 @@ use rocket::http::Cookie;
 use std::env;
 
 pub fn create_send_token<'a>(_id: &str) -> Cookie<'a> {
-    Cookie::build("token", sign_token(_id))
+    Cookie::build("token", sign_token(&_id))
         .path("/")
         .secure(false)
         .http_only(true)
@@ -20,4 +20,10 @@ pub fn sign_token(_id: &str) -> String {
     )
     .unwrap();
     result
+}
+
+//Must implement check password function here
+// must implement check password function
+pub fn check_password(password: &str) {
+    //do something
 }

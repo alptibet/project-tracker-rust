@@ -57,13 +57,13 @@ pub struct UserInput {
 #[serde(crate = "rocket::serde")]
 pub struct AuthInfo {
     pub password: String,
-    pub _id:String
+    pub _id: String,
 }
 
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct LoginInput {
-    pub username:String,
-    pub password:String
+    pub username: String,
+    pub password: String,
 }

@@ -35,7 +35,6 @@ pub async fn signup(
     match user::insert_user(&db, input).await {
         Ok(_user_doc) => {
             let token = create_send_token(&_user_doc._id);
-            println!("{:?}", token);
             cookies.add(token);
             Ok(Json(DocResponse {
                 message: "success".to_string(),
@@ -47,27 +46,21 @@ pub async fn signup(
 }
 
 #[post("/login", data = "<input>")]
-pub async fn login(
-    db: &State<Database>,
-    input: Json<LoginInput>,
-    cookies: &CookieJar<'_>,
-) -> Result<Json<DocResponse<AuthInfo>>, AppError> {
+pub async fn login(db: &State<Database>, input: Json<LoginInput>, cookies: &CookieJar<'_>)
+/*-> Result<Json<DocResponse<AuthInfo>>, AppError>*/
+{
     //get user with user name
     let user = match user::find_auth_info(&db, &input.username).await {
         Ok(_auth_info) => {
             if _auth_info.is_none() {
-                return Err(AppError::build(404));
+                // return Err(AppError::build(404));
             }
-            Ok(Json(DocResponse {
-                message: "Success".to_string(),
-                data: _auth_info.unwrap(),
-            }))
+            Ok(_auth_info.unwrap())
         }
         Err(_error) => Err(AppError::build(400)),
     };
-    println!("{:?}", user);
-    user
     //get his hashed password
+    let user_password = user.unwrap().password;
     //hash the input password and compare if passwords are correct
     //send cookie
 }

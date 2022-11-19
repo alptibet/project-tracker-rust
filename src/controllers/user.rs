@@ -4,11 +4,11 @@ use mongodb::bson::{doc, DateTime, Document};
 use mongodb::Database;
 use rocket::serde::json::Json;
 
+use crate::models::user::AuthInfo;
 use crate::models::user::User;
 use crate::models::user::UserDocument;
 use crate::models::user::UserInput;
 use crate::models::user::UserRole;
-use crate::models::user::AuthInfo;
 
 pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
     let collection = db.collection::<UserDocument>("users");
@@ -85,14 +85,19 @@ pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::erro
     Ok(user_json)
 }
 
-pub async fn find_auth_info(db: &Database, username:&str) -> mongodb::error::Result<Option<AuthInfo>> {
+pub async fn find_auth_info(
+    db: &Database,
+    username: &str,
+) -> mongodb::error::Result<Option<AuthInfo>> {
     let collection = db.collection::<UserDocument>("users");
-    let user_doc = collection.find_one(doc! {"username":username}, None).await?;
+    let user_doc = collection
+        .find_one(doc! {"username":username}, None)
+        .await?;
     if user_doc.is_none() {
         return Ok(None);
     }
     let unwrapped_doc = user_doc.unwrap();
-    let auth_info = AuthInfo{
+    let auth_info = AuthInfo {
         _id: unwrapped_doc._id.to_string(),
         password: unwrapped_doc.password.to_string(),
     };
