@@ -1,5 +1,6 @@
 use bcrypt::hash;
 use futures::stream::TryStreamExt;
+use mongodb::bson::oid::ObjectId;
 use mongodb::bson::{doc, DateTime, Document};
 use mongodb::Database;
 use rocket::serde::json::Json;
@@ -103,4 +104,31 @@ pub async fn find_auth_info(
     };
 
     Ok(Some(auth_info))
+}
+
+pub async fn find_one_user(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<User>> {
+    let collection = db.collection::<UserDocument>("users");
+
+    let user_doc = collection.find_one(doc! {"_id":oid}, None).await?;
+    if user_doc.is_none() {
+        return Ok(None);
+    }
+    let unwrapped_doc = user_doc.unwrap();
+    let user_json = User {
+        _id: unwrapped_doc._id.to_string(),
+        name: unwrapped_doc.name.to_string(),
+        surname: unwrapped_doc.surname.to_string(),
+        username: unwrapped_doc.username.to_string(),
+        email: unwrapped_doc.email.to_string(),
+        active: unwrapped_doc.active.to_string(),
+        password: unwrapped_doc.password.to_string(),
+        passwordChangeAt: unwrapped_doc.passwordChangeAt.to_string(),
+        role: match unwrapped_doc.role {
+            UserRole::Admin => "Admin".to_string(),
+            UserRole::User => "User".to_string(),
+            UserRole::Superuser => "Superuser".to_string(),
+        },
+    };
+
+    Ok(Some(user_json))
 }

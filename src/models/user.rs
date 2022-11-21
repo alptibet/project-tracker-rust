@@ -1,8 +1,14 @@
+use jsonwebtoken::crypto::verify;
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Validation};
 use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
+use mongodb::Database;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::{Deserialize, Serialize};
+use std::env;
+
+use crate::controllers::user;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -90,19 +96,30 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
 
     async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         // Returns true if `key` is a valid API key string.
-        fn is_valid_token() -> bool {
+        async fn is_valid_token(token: &str) -> bool {
+            let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
+            let payload = verify(
+                token,
+                "oha".as_bytes(),
+                &DecodingKey::from_secret(secret_key.as_bytes()),
+                Algorithm::HS256,
+            );
+            println!("{:?}", payload.unwrap());
+            //gelen token jwt ile verify etmek lazim ona gore true ya da false return
             true
         }
 
-        match req.headers().get_one("token") {
+        let token: Option<String> = req
+            .cookies()
+            .get("token")
+            .and_then(|cookie| cookie.value().parse().ok());
+
+        match token {
             None => Outcome::Failure((Status::BadRequest, AuthError::MissingKey)),
-            Some(token) if is_valid_token() => {
-                println!("{:?}", token);
-                Outcome::Success(AuthenticatedUser {
-                    _id: "deneme".to_string(),
-                })
-            }
-            Some(_) => Outcome::Failure((Status::BadRequest, AuthError::InvalidKey)),
+            Some(token) if is_valid_token(&token).await => Outcome::Success(AuthenticatedUser {
+                _id: "deneme".to_string(),
+            }),
+            Some(_) => Outcome::Failure((Status::Unauthorized, AuthError::InvalidKey)),
         }
     }
 }
