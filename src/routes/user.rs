@@ -3,11 +3,10 @@ use rocket::http::CookieJar;
 use rocket::serde::json::Json;
 use rocket::State;
 
-use crate::controllers::auth::create_send_token;
+use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
-use crate::models::response::{DocResponse, VecResponse};
-use crate::models::user::AuthInfo;
+use crate::models::response::{DocResponse, MessageResponse, VecResponse};
 use crate::models::user::LoginInput;
 use crate::models::user::User;
 use crate::models::user::UserInput;
@@ -46,21 +45,34 @@ pub async fn signup(
 }
 
 #[post("/login", data = "<input>")]
-pub async fn login(db: &State<Database>, input: Json<LoginInput>, cookies: &CookieJar<'_>)
-/*-> Result<Json<DocResponse<AuthInfo>>, AppError>*/
-{
+pub async fn login(
+    db: &State<Database>,
+    input: Json<LoginInput>,
+    cookies: &CookieJar<'_>,
+) -> Result<Json<MessageResponse>, AppError> {
     //get user with user name
     let user = match user::find_auth_info(&db, &input.username).await {
         Ok(_auth_info) => {
             if _auth_info.is_none() {
-                // return Err(AppError::build(404));
+                return Err(AppError::build(404));
             }
             Ok(_auth_info.unwrap())
         }
         Err(_error) => Err(AppError::build(400)),
     };
-    //get his hashed password
-    let user_password = user.unwrap().password;
-    //hash the input password and compare if passwords are correct
-    //send cookie
+    let unwrapped_user = user.unwrap();
+    match check_password(&input.password, &unwrapped_user.password) {
+        Ok(_match) => {
+            if _match {
+                cookies.add(create_send_token(&unwrapped_user._id));
+                Ok(Json(MessageResponse {
+                    message: "status".to_string(),
+                }))
+            } else {
+                return Err(AppError::build(401));
+            }
+        }
+        Err(_error) => Err(AppError::build(500)),
+    }
+    //if passes match send cookie
 }

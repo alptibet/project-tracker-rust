@@ -1,3 +1,4 @@
+use bcrypt::{verify, BcryptError};
 use jsonwebtoken::crypto::sign;
 use jsonwebtoken::{Algorithm, EncodingKey};
 use rocket::http::Cookie;
@@ -22,8 +23,6 @@ pub fn sign_token(_id: &str) -> String {
     result
 }
 
-//Must implement check password function here
-// must implement check password function
-pub fn check_password(password: &str) {
-    //do something
+pub fn check_password(password: &str, hashed_password: &str) -> Result<bool, BcryptError> {
+    verify(password, hashed_password)
 }
