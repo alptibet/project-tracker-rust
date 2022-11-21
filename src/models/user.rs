@@ -1,5 +1,7 @@
 use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
+use rocket::http::Status;
+use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -66,4 +68,35 @@ pub struct AuthInfo {
 pub struct LoginInput {
     pub username: String,
     pub password: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
+pub struct AuthenticatedUser {
+    pub _id: String,
+}
+
+#[derive(Debug)]
+enum AuthError {
+    MissingKey,
+    InvalidKey,
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for AuthenticatedUser {
+    type Error = AuthError;
+
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        /// Returns true if `key` is a valid API key string.
+        fn is_valid(key: &str) -> bool {
+            true
+        }
+
+        match req.headers().get_one("token") {
+            None => Outcome::Failure((Status::BadRequest, AuthError::MissingKey)),
+            Some(key) if is_valid(key) => Outcome::Success(AuthenticatedUser(user)),
+            Some(_) => Outcome::Failure((Status::BadRequest, AuthError::InvalidKey)),
+        }
+    }
 }
