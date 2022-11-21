@@ -49,7 +49,7 @@ pub async fn login(
     input: Json<LoginInput>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<MessageResponse>, AppError> {
-    let user = match user::find_auth_info(&db, &input.username).await {
+    let auth_info = match user::find_auth_info(&db, &input.username).await {
         Ok(_auth_info) => {
             if _auth_info.is_none() {
                 return Err(AppError::build(404));
@@ -58,11 +58,11 @@ pub async fn login(
         }
         Err(_error) => Err(AppError::build(400)),
     };
-    let unwrapped_user = user.unwrap();
-    match check_password(&input.password, &unwrapped_user.password) {
+    let unwrapped_auth = auth_info.unwrap();
+    match check_password(&input.password, &unwrapped_auth.password) {
         Ok(_match) => {
             if _match {
-                cookies.add(create_send_token(&unwrapped_user._id));
+                cookies.add(create_send_token(&unwrapped_auth._id));
                 Ok(Json(MessageResponse {
                     message: "success".to_string(),
                 }))
