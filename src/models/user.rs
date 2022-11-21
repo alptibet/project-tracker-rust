@@ -73,12 +73,13 @@ pub struct LoginInput {
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
+
 pub struct AuthenticatedUser {
     pub _id: String,
 }
 
 #[derive(Debug)]
-enum AuthError {
+pub enum AuthError {
     MissingKey,
     InvalidKey,
 }
@@ -88,14 +89,19 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
     type Error = AuthError;
 
     async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        /// Returns true if `key` is a valid API key string.
-        fn is_valid(key: &str) -> bool {
+        // Returns true if `key` is a valid API key string.
+        fn is_valid_token() -> bool {
             true
         }
 
         match req.headers().get_one("token") {
             None => Outcome::Failure((Status::BadRequest, AuthError::MissingKey)),
-            Some(key) if is_valid(key) => Outcome::Success(AuthenticatedUser(user)),
+            Some(token) if is_valid_token() => {
+                println!("{:?}", token);
+                Outcome::Success(AuthenticatedUser {
+                    _id: "deneme".to_string(),
+                })
+            }
             Some(_) => Outcome::Failure((Status::BadRequest, AuthError::InvalidKey)),
         }
     }

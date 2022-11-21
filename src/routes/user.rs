@@ -7,9 +7,7 @@ use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
 use crate::models::response::{MessageResponse, VecResponse};
-use crate::models::user::LoginInput;
-use crate::models::user::User;
-use crate::models::user::UserInput;
+use crate::models::user::{AuthenticatedUser, LoginInput, User, UserInput};
 
 #[get("/get-all")]
 pub async fn get_users(db: &State<Database>) -> Result<Json<VecResponse<User>>, AppError> {
