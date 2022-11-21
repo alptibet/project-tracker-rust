@@ -6,7 +6,7 @@ use rocket::State;
 use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
-use crate::models::response::{DocResponse, MessageResponse, VecResponse};
+use crate::models::response::{MessageResponse, VecResponse};
 use crate::models::user::LoginInput;
 use crate::models::user::User;
 use crate::models::user::UserInput;
@@ -30,14 +30,13 @@ pub async fn signup(
     db: &State<Database>,
     input: Json<UserInput>,
     cookies: &CookieJar<'_>,
-) -> Result<Json<DocResponse<User>>, AppError> {
+) -> Result<Json<MessageResponse>, AppError> {
     match user::insert_user(&db, input).await {
         Ok(_user_doc) => {
             let token = create_send_token(&_user_doc._id);
             cookies.add(token);
-            Ok(Json(DocResponse {
+            Ok(Json(MessageResponse {
                 message: "success".to_string(),
-                data: _user_doc,
             }))
         }
         Err(_error) => Err(AppError::build(400)),
@@ -50,7 +49,6 @@ pub async fn login(
     input: Json<LoginInput>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<MessageResponse>, AppError> {
-    //get user with user name
     let user = match user::find_auth_info(&db, &input.username).await {
         Ok(_auth_info) => {
             if _auth_info.is_none() {
@@ -66,7 +64,7 @@ pub async fn login(
             if _match {
                 cookies.add(create_send_token(&unwrapped_user._id));
                 Ok(Json(MessageResponse {
-                    message: "status".to_string(),
+                    message: "success".to_string(),
                 }))
             } else {
                 return Err(AppError::build(401));
@@ -74,5 +72,4 @@ pub async fn login(
         }
         Err(_error) => Err(AppError::build(500)),
     }
-    //if passes match send cookie
 }
