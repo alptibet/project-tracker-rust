@@ -4,7 +4,7 @@ use jsonwebtoken::{encode, EncodingKey, Header};
 use rocket::http::Cookie;
 use std::env;
 
-use crate::models::user::AuthenticatedUser;
+use crate::models::user::Claims;
 
 pub fn create_send_token<'a>(_id: &str) -> Cookie<'a> {
     Cookie::build("token", sign_token(&_id))
@@ -20,12 +20,12 @@ pub fn sign_token(_id: &str) -> String {
         .checked_add_signed(chrono::Duration::days(1))
         .expect("valid time stamp")
         .timestamp();
-    let my_claim = AuthenticatedUser {
-        _id: _id.to_string(),
+    let my_claim = Claims {
+        sub: _id.to_string(),
         exp: expiration as usize,
     };
 
-    let result = encode::<AuthenticatedUser>(
+    let result = encode::<Claims>(
         &Header::default(),
         &my_claim,
         &EncodingKey::from_secret(secret_key.as_bytes()),

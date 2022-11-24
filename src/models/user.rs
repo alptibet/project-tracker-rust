@@ -1,3 +1,4 @@
+use crate::errors::apperror::AppError;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
@@ -78,30 +79,34 @@ pub struct LoginInput {
 
 pub struct AuthenticatedUser {
     pub _id: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
+pub struct Claims {
+    pub sub: String,
     pub exp: usize,
 }
 
-#[derive(Debug)]
-pub enum AuthError {
-    MissingKey,
-    InvalidKey,
-}
+// #[derive(Debug)]
+// pub enum AuthError {
+//     MissingKey,
+//     InvalidKey,
+// }
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthenticatedUser {
-    type Error = AuthError;
+    type Error = AppError;
 
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        // Returns true if `key` is a valid API key string.
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, AppError> {
         async fn is_valid_token(token: &str) -> bool {
             let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
-            let payload = decode::<AuthenticatedUser>(
+            let payload = decode::<Claims>(
                 token,
                 &DecodingKey::from_secret(secret_key.as_bytes()),
                 &Validation::new(Algorithm::HS256),
             );
-            println!("{:?}", payload);
-            //gelen token jwt ile verify etmek lazim ona gore true ya da false return
             match payload {
                 Ok(_) => true,
                 Err(_) => false,
@@ -113,15 +118,12 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             .get("token")
             .and_then(|cookie| cookie.value().parse().ok());
 
-        println!("{:?}", token);
-
         match token {
-            None => Outcome::Failure((Status::BadRequest, AuthError::MissingKey)),
-            Some(token) if is_valid_token(&token).await => Outcome::Success(AuthenticatedUser {
-                _id: "deneme".to_string(),
-                exp: 9,
-            }),
-            Some(_) => Outcome::Failure((Status::Unauthorized, AuthError::InvalidKey)),
+            None => Outcome::Failure((Status::BadRequest, AppError::build(400))),
+            Some(_token) if is_valid_token(&_token).await => {
+                Outcome::Success(AuthenticatedUser { _id: _token })
+            }
+            Some(_) => Outcome::Failure((Status::Unauthorized, AppError::build(401))),
         }
     }
 }
