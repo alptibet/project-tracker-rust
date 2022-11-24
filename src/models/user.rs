@@ -1,14 +1,10 @@
-use jsonwebtoken::crypto::verify;
-use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Validation};
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
-use mongodb::Database;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::{Deserialize, Serialize};
 use std::env;
-
-use crate::controllers::user;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -82,6 +78,7 @@ pub struct LoginInput {
 
 pub struct AuthenticatedUser {
     pub _id: String,
+    pub exp: usize,
 }
 
 #[derive(Debug)]
@@ -98,15 +95,17 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         // Returns true if `key` is a valid API key string.
         async fn is_valid_token(token: &str) -> bool {
             let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
-            let payload = verify(
+            let payload = decode::<AuthenticatedUser>(
                 token,
-                "oha".as_bytes(),
                 &DecodingKey::from_secret(secret_key.as_bytes()),
-                Algorithm::HS256,
+                &Validation::new(Algorithm::HS256),
             );
-            println!("{:?}", payload.unwrap());
+            println!("{:?}", payload);
             //gelen token jwt ile verify etmek lazim ona gore true ya da false return
-            true
+            match payload {
+                Ok(_) => true,
+                Err(_) => false,
+            }
         }
 
         let token: Option<String> = req
@@ -114,10 +113,13 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             .get("token")
             .and_then(|cookie| cookie.value().parse().ok());
 
+        println!("{:?}", token);
+
         match token {
             None => Outcome::Failure((Status::BadRequest, AuthError::MissingKey)),
             Some(token) if is_valid_token(&token).await => Outcome::Success(AuthenticatedUser {
                 _id: "deneme".to_string(),
+                exp: 9,
             }),
             Some(_) => Outcome::Failure((Status::Unauthorized, AuthError::InvalidKey)),
         }

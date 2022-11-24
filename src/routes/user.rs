@@ -12,7 +12,7 @@ use crate::models::user::{AuthenticatedUser, LoginInput, User, UserInput};
 #[get("/get-all")]
 pub async fn get_users(
     db: &State<Database>,
-    user: AuthenticatedUser,
+    _user: AuthenticatedUser,
 ) -> Result<Json<VecResponse<User>>, AppError> {
     match user::find_users(&db).await {
         Ok(_user_doc) => Ok(Json(VecResponse {

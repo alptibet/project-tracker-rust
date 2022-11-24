@@ -1,8 +1,10 @@
 use bcrypt::{verify, BcryptError};
-use jsonwebtoken::crypto::sign;
-use jsonwebtoken::{Algorithm, EncodingKey};
+use chrono::Utc;
+use jsonwebtoken::{encode, EncodingKey, Header};
 use rocket::http::Cookie;
 use std::env;
+
+use crate::models::user::AuthenticatedUser;
 
 pub fn create_send_token<'a>(_id: &str) -> Cookie<'a> {
     Cookie::build("token", sign_token(&_id))
@@ -14,10 +16,19 @@ pub fn create_send_token<'a>(_id: &str) -> Cookie<'a> {
 
 pub fn sign_token(_id: &str) -> String {
     let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
-    let result = sign(
-        _id.as_bytes(),
+    let expiration = Utc::now()
+        .checked_add_signed(chrono::Duration::days(1))
+        .expect("valid time stamp")
+        .timestamp();
+    let my_claim = AuthenticatedUser {
+        _id: _id.to_string(),
+        exp: expiration as usize,
+    };
+
+    let result = encode::<AuthenticatedUser>(
+        &Header::default(),
+        &my_claim,
         &EncodingKey::from_secret(secret_key.as_bytes()),
-        Algorithm::HS256,
     )
     .unwrap();
     result
