@@ -7,6 +7,7 @@ use rocket::serde::json::Json;
 
 use crate::models::user::AuthInfo;
 use crate::models::user::User;
+use crate::models::user::UserId;
 use crate::models::user::UserDocument;
 use crate::models::user::UserInput;
 use crate::models::user::UserRole;
@@ -106,29 +107,16 @@ pub async fn find_auth_info(
     Ok(Some(auth_info))
 }
 
-pub async fn find_one_user(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<User>> {
-    let collection = db.collection::<UserDocument>("users");
+pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<UserId>> {
+    let collection = db.collection::<UserId>("users");
 
     let user_doc = collection.find_one(doc! {"_id":oid}, None).await?;
     if user_doc.is_none() {
         return Ok(None);
     }
     let unwrapped_doc = user_doc.unwrap();
-    let user_json = User {
+    let user_json = UserId {
         _id: unwrapped_doc._id.to_string(),
-        name: unwrapped_doc.name.to_string(),
-        surname: unwrapped_doc.surname.to_string(),
-        username: unwrapped_doc.username.to_string(),
-        email: unwrapped_doc.email.to_string(),
-        active: unwrapped_doc.active.to_string(),
-        password: unwrapped_doc.password.to_string(),
-        passwordChangeAt: unwrapped_doc.passwordChangeAt.to_string(),
-        role: match unwrapped_doc.role {
-            UserRole::Admin => "Admin".to_string(),
-            UserRole::User => "User".to_string(),
-            UserRole::Superuser => "Superuser".to_string(),
-        },
     };
-
     Ok(Some(user_json))
 }

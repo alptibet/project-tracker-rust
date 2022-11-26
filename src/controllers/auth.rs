@@ -37,3 +37,4 @@ pub fn sign_token(_id: &str) -> String {
 pub fn check_password(password: &str, hashed_password: &str) -> Result<bool, BcryptError> {
     verify(password, hashed_password)
 }
+

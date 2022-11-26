@@ -1,11 +1,15 @@
-use crate::errors::apperror::AppError;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
+use mongodb::Database;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::{Deserialize, Serialize};
+use rocket::outcome::try_outcome;
+use rocket::State;
 use std::env;
+
+use crate::controllers::user;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -68,6 +72,13 @@ pub struct AuthInfo {
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
+pub struct UserId {
+    pub _id: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 pub struct LoginInput {
     pub username: String,
     pub password: String,
@@ -89,17 +100,18 @@ pub struct Claims {
     pub exp: usize,
 }
 
-// #[derive(Debug)]
-// pub enum AuthError {
-//     MissingKey,
-//     InvalidKey,
-// }
+#[derive(Debug)]
+pub enum AuthError {
+    MissingKey,
+    InvalidKey,
+}
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthenticatedUser {
-    type Error = AppError;
+    type Error = AuthError;
 
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, AppError> {
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let db = try_outcome!(req.guard::<&State<Database>>().await);
         async fn is_valid_token(token: &str) -> bool {
             let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
             let payload = decode::<Claims>(
@@ -116,14 +128,15 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         let token: Option<String> = req
             .cookies()
             .get("token")
-            .and_then(|cookie| cookie.value().parse().ok());
+            .and_then(|token| token.value().parse().ok());
+
 
         match token {
-            None => Outcome::Failure((Status::BadRequest, AppError::build(400))),
+            None => Outcome::Failure((Status::BadRequest, AuthError::MissingKey)),
             Some(_token) if is_valid_token(&_token).await => {
                 Outcome::Success(AuthenticatedUser { _id: _token })
             }
-            Some(_) => Outcome::Failure((Status::Unauthorized, AppError::build(401))),
+            Some(_) => Outcome::Failure((Status::Unauthorized, AuthError::InvalidKey)),
         }
     }
 }

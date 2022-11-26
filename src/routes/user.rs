@@ -7,23 +7,19 @@ use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
 use crate::models::response::{MessageResponse, VecResponse};
-use crate::models::user::{AuthenticatedUser, LoginInput, User, UserInput};
+use crate::models::user::{AuthError, AuthenticatedUser, LoginInput, User, UserInput};
 
 #[get("/get-all")]
 pub async fn get_users(
     db: &State<Database>,
-    user: AuthenticatedUser,
+    _auth_user: AuthenticatedUser,
 ) -> Result<Json<VecResponse<User>>, AppError> {
-    println!("{:?}", user);
     match user::find_users(&db).await {
         Ok(_user_doc) => Ok(Json(VecResponse {
             message: "success".to_string(),
             data: _user_doc,
         })),
-        Err(_error) => {
-            println!("{_error}");
-            Err(AppError::build(400))
-        }
+        Err(_error) => Err(AppError::build(400)),
     }
 }
 
@@ -80,3 +76,4 @@ pub async fn login(
 pub fn logout(cookies: &CookieJar<'_>) {
     cookies.remove(Cookie::named("token"));
 }
+
