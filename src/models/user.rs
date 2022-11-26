@@ -130,11 +130,15 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             .get("token")
             .and_then(|token| token.value().parse().ok());
 
-        match token {
+        let oid = ObjectId::parse_str(&token.unwrap()).unwrap();
+        let deneme = user::match_user_id(db, oid).await.unwrap();
+        println!("{:?}", deneme);
+
+        match deneme {
             None => Outcome::Failure((Status::BadRequest, ())),
-            Some(_token) if is_valid_token(&_token).await => {
-                Outcome::Success(AuthenticatedUser { _id: _token })
-            }
+            Some(_token) if is_valid_token(&_token).await => Outcome::Success(AuthenticatedUser {
+                _id: "_token".to_string(),
+            }),
             Some(_) => Outcome::Failure((Status::Unauthorized, ())),
         }
     }

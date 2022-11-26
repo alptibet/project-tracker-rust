@@ -76,4 +76,3 @@ pub async fn login(
 pub fn logout(cookies: &CookieJar<'_>) {
     cookies.remove(Cookie::named("token"));
 }
-

@@ -7,8 +7,8 @@ use rocket::serde::json::Json;
 
 use crate::models::user::AuthInfo;
 use crate::models::user::User;
-use crate::models::user::UserId;
 use crate::models::user::UserDocument;
+use crate::models::user::UserId;
 use crate::models::user::UserInput;
 use crate::models::user::UserRole;
 
