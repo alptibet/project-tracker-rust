@@ -3,9 +3,9 @@ use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
 use mongodb::Database;
 use rocket::http::Status;
+use rocket::outcome::{try_outcome, IntoOutcome};
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::{Deserialize, Serialize};
-use rocket::outcome::try_outcome;
 use rocket::State;
 use std::env;
 
@@ -108,9 +108,9 @@ pub enum AuthError {
 
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthenticatedUser {
-    type Error = AuthError;
+    type Error = ();
 
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+    async fn from_request(req: &'r Request<'_>) -> Outcome<AuthenticatedUser, ()> {
         let db = try_outcome!(req.guard::<&State<Database>>().await);
         async fn is_valid_token(token: &str) -> bool {
             let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
@@ -130,13 +130,12 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             .get("token")
             .and_then(|token| token.value().parse().ok());
 
-
         match token {
-            None => Outcome::Failure((Status::BadRequest, AuthError::MissingKey)),
+            None => Outcome::Failure((Status::BadRequest, ())),
             Some(_token) if is_valid_token(&_token).await => {
                 Outcome::Success(AuthenticatedUser { _id: _token })
             }
-            Some(_) => Outcome::Failure((Status::Unauthorized, AuthError::InvalidKey)),
+            Some(_) => Outcome::Failure((Status::Unauthorized, ())),
         }
     }
 }
