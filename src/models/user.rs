@@ -3,7 +3,7 @@ use mongodb::bson::datetime::DateTime;
 use mongodb::bson::oid::ObjectId;
 use mongodb::Database;
 use rocket::http::Status;
-use rocket::outcome::{try_outcome, IntoOutcome};
+use rocket::outcome::try_outcome;
 use rocket::request::{FromRequest, Outcome, Request};
 use rocket::serde::{Deserialize, Serialize};
 use rocket::State;
@@ -92,7 +92,6 @@ pub struct AuthenticatedUser {
     pub _id: String,
 }
 
-#[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Claims {
@@ -112,15 +111,33 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
 
     async fn from_request(req: &'r Request<'_>) -> Outcome<AuthenticatedUser, ()> {
         let db = try_outcome!(req.guard::<&State<Database>>().await);
-        async fn is_valid_token(token: &str) -> bool {
+        async fn is_valid_token(db: &Database, token: &str) -> bool {
             let secret_key = env::var("JWT_SECRET").expect("No JWT KEY found in environment.");
             let payload = decode::<Claims>(
                 token,
                 &DecodingKey::from_secret(secret_key.as_bytes()),
                 &Validation::new(Algorithm::HS256),
             );
+
+            println!("{:?}", payload);
             match payload {
-                Ok(_) => true,
+                Ok(_payload) => {
+                    let oid = _payload.claims.sub;
+                    println!("{:?}", oid);
+
+                    // let dbuser = match user::match_user_id(db, oid).await {
+                    //     Ok(_dbuser) => {
+                    //         if _dbuser.is_none() {
+                    //             return false;
+                    //         }
+                    //         println!("{:?}", _dbuser.unwrap());
+                    //         return true;
+                    //     }
+                    //     Err(_error) => false,
+                    // };
+                    // println!("{:?}", dbuser);
+                    return true;
+                }
                 Err(_) => false,
             }
         }
@@ -130,15 +147,13 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             .get("token")
             .and_then(|token| token.value().parse().ok());
 
-        let oid = ObjectId::parse_str(&token.unwrap()).unwrap();
-        let deneme = user::match_user_id(db, oid).await.unwrap();
-        println!("{:?}", deneme);
-
-        match deneme {
+        match token {
             None => Outcome::Failure((Status::BadRequest, ())),
-            Some(_token) if is_valid_token(&_token).await => Outcome::Success(AuthenticatedUser {
-                _id: "_token".to_string(),
-            }),
+            Some(_token) if is_valid_token(db, &_token).await => {
+                Outcome::Success(AuthenticatedUser {
+                    _id: "_token".to_string(),
+                })
+            }
             Some(_) => Outcome::Failure((Status::Unauthorized, ())),
         }
     }

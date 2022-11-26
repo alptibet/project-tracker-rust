@@ -28,5 +28,5 @@ fn rocket() -> _ {
                 update_one_contractor
             ],
         )
-        .mount("/api/users", routes![get_users])
+        .mount("/api/users", routes![get_users, get_one_user])
 }

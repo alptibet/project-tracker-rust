@@ -1,3 +1,4 @@
+use mongodb::bson::oid::ObjectId;
 use mongodb::Database;
 use rocket::http::{Cookie, CookieJar};
 use rocket::serde::json::Json;
@@ -6,8 +7,8 @@ use rocket::State;
 use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
-use crate::models::response::{MessageResponse, VecResponse};
-use crate::models::user::{AuthError, AuthenticatedUser, LoginInput, User, UserInput};
+use crate::models::response::{DocResponse, MessageResponse, VecResponse};
+use crate::models::user::{AuthError, AuthenticatedUser, LoginInput, User, UserId, UserInput};
 
 #[get("/get-all")]
 pub async fn get_users(
@@ -20,6 +21,26 @@ pub async fn get_users(
             data: _user_doc,
         })),
         Err(_error) => Err(AppError::build(400)),
+    }
+}
+
+#[get("/<_id>")] //deneme amacli sadece id bulmak icin
+pub async fn get_one_user(
+    db: &State<Database>,
+    _id: String,
+) -> Result<Json<DocResponse<UserId>>, AppError> {
+    let oid = parse_oid(_id);
+    match user::match_user_id(&db, oid?).await {
+        Ok(_user_doc) => {
+            if _user_doc.is_none() {
+                return Err(AppError::build(404));
+            }
+            Ok(Json(DocResponse {
+                message: "success".to_string(),
+                data: _user_doc.unwrap(),
+            }))
+        }
+        Err(_error) => Err(AppError::build(404)),
     }
 }
 
@@ -75,4 +96,12 @@ pub async fn login(
 #[post("/logout")]
 pub fn logout(cookies: &CookieJar<'_>) {
     cookies.remove(Cookie::named("token"));
+}
+
+fn parse_oid(_id: String) -> Result<ObjectId, AppError> {
+    let oid = ObjectId::parse_str(&_id);
+    match oid {
+        Ok(_oid) => Ok(_oid),
+        Err(_error) => Err(AppError::build(400)),
+    }
 }
