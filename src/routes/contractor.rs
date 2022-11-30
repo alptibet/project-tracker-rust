@@ -54,10 +54,7 @@ pub async fn insert_one_contractor(
             message: "success".to_string(),
             data: _contractor_doc,
         })),
-        Err(_error) => {
-            println!("{_error}");
-            Err(AppError::build(400))
-        }
+        Err(_error) => Err(AppError::build(400)),
     }
 }
 

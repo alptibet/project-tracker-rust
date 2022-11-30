@@ -79,6 +79,13 @@ pub struct UserId {
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
+pub struct UserIdDocument {
+    pub _id: ObjectId,
+}
+
+#[allow(non_snake_case)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 pub struct LoginInput {
     pub username: String,
     pub password: String,
@@ -99,12 +106,7 @@ pub struct Claims {
     pub exp: usize,
 }
 
-#[derive(Debug)]
-pub enum AuthError {
-    MissingKey,
-    InvalidKey,
-}
-
+//
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthenticatedUser {
     type Error = ();
@@ -122,20 +124,20 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
             println!("{:?}", payload);
             match payload {
                 Ok(_payload) => {
-                    let oid = _payload.claims.sub;
+                    let oid = ObjectId::parse_str(_payload.claims.sub).unwrap();
                     println!("{:?}", oid);
 
-                    // let dbuser = match user::match_user_id(db, oid).await {
-                    //     Ok(_dbuser) => {
-                    //         if _dbuser.is_none() {
-                    //             return false;
-                    //         }
-                    //         println!("{:?}", _dbuser.unwrap());
-                    //         return true;
-                    //     }
-                    //     Err(_error) => false,
-                    // };
-                    // println!("{:?}", dbuser);
+                    let dbuser = match user::match_user_id(db, oid).await {
+                        Ok(_dbuser) => {
+                            if _dbuser.is_none() {
+                                return false;
+                            }
+                            println!("{:?}", _dbuser.unwrap());
+                            return true;
+                        }
+                        Err(_error) => false,
+                    };
+                    println!("{:?}", dbuser);
                     return true;
                 }
                 Err(_) => false,

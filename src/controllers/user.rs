@@ -5,12 +5,12 @@ use mongodb::bson::{doc, DateTime, Document};
 use mongodb::Database;
 use rocket::serde::json::Json;
 
-use crate::models::user::AuthInfo;
 use crate::models::user::User;
 use crate::models::user::UserDocument;
 use crate::models::user::UserId;
 use crate::models::user::UserInput;
 use crate::models::user::UserRole;
+use crate::models::user::{AuthInfo, UserIdDocument};
 
 pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
     let collection = db.collection::<UserDocument>("users");
@@ -108,7 +108,7 @@ pub async fn find_auth_info(
 }
 
 pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<UserId>> {
-    let collection = db.collection::<UserId>("users");
+    let collection = db.collection::<UserIdDocument>("users");
 
     let user_doc = collection.find_one(doc! {"_id":oid}, None).await?;
     if user_doc.is_none() {
