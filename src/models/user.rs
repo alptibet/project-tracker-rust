@@ -121,33 +121,38 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                 &Validation::new(Algorithm::HS256),
             );
 
-            println!("{:?}", payload);
             match payload {
                 Ok(_payload) => {
                     let oid = ObjectId::parse_str(_payload.claims.sub).unwrap();
-                    println!("{:?}", oid);
 
-                    let dbuser = match user::match_user_id(db, oid).await {
+                    match user::match_user_id(db, oid).await {
                         Ok(_dbuser) => {
                             if _dbuser.is_none() {
                                 return false;
                             }
-                            println!("{:?}", _dbuser.unwrap());
                             return true;
                         }
                         Err(_error) => false,
                     };
-                    println!("{:?}", dbuser);
                     return true;
                 }
                 Err(_) => false,
             }
         }
 
-        let token: Option<String> = req
-            .cookies()
-            .get("token")
-            .and_then(|token| token.value().parse().ok());
+        let token: Option<String>;
+        let auth_bearer = req.headers().get_one("authorization");
+        if auth_bearer.is_none() {
+            //If there is no auth bearer check for cookie
+            token = req
+                .cookies()
+                .get("token")
+                .and_then(|token| token.value().parse().ok());
+        } else {
+            //If there is auth bearer use it as token
+            let bearer: Vec<&str> = auth_bearer.unwrap().split(" ").collect();
+            token = Some(bearer[1].to_string());
+        }
 
         match token {
             None => Outcome::Failure((Status::BadRequest, ())),
