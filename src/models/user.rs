@@ -121,22 +121,21 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                 &Validation::new(Algorithm::HS256),
             );
 
-            match payload {
-                Ok(_payload) => {
-                    let oid = ObjectId::parse_str(_payload.claims.sub).unwrap();
+            if let Ok(_payload) = payload {
+                let oid = ObjectId::parse_str(_payload.claims.sub).unwrap();
 
-                    match user::match_user_id(db, oid).await {
-                        Ok(_dbuser) => {
-                            if _dbuser.is_none() {
-                                return false;
-                            }
-                            return true;
+                match user::match_user_id(db, oid).await {
+                    Ok(_dbuser) => {
+                        if _dbuser.is_none() {
+                            return false;
                         }
-                        Err(_error) => false,
-                    };
-                    return true;
-                }
-                Err(_) => false,
+                        return true;
+                    }
+                    Err(_error) => false,
+                };
+                return true;
+            } else {
+                false
             }
         }
 
@@ -165,3 +164,4 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         }
     }
 }
+
