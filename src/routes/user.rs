@@ -92,7 +92,7 @@ pub async fn login(
         Err(_error) => Err(AppError::build(500)),
     }
 }
-//deneme
+
 #[post("/logout")]
 pub fn logout(cookies: &CookieJar<'_>) {
     cookies.remove(Cookie::named("token"));
