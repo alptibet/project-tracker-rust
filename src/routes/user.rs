@@ -9,6 +9,7 @@ use crate::controllers::user;
 use crate::errors::apperror::AppError;
 use crate::models::response::{DocResponse, MessageResponse, VecResponse};
 use crate::models::user::{AuthenticatedUser, LoginInput, User, UserId, UserInput};
+
 #[get("/get-all")]
 pub async fn get_users(
     db: &State<Database>,
@@ -51,7 +52,6 @@ pub async fn signup(
 ) -> Result<Json<MessageResponse>, AppError> {
     match user::insert_user(db, input).await {
         Ok(_user_doc) => {
-            println!("{:?}", _user_doc._id);
             let token = create_send_token(&_user_doc._id);
             cookies.add(token);
             Ok(Json(MessageResponse {

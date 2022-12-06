@@ -2,6 +2,7 @@ use bcrypt::hash;
 use futures::stream::TryStreamExt;
 use mongodb::bson::oid::ObjectId;
 use mongodb::bson::{doc, DateTime, Document};
+use mongodb::bson::document::Document as doc;
 use mongodb::Database;
 use rocket::serde::json::Json;
 
@@ -63,18 +64,20 @@ pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::erro
         "role": "User".to_string(),
     };
 
-    let insert_one_result = collection.insert_one(user_document, None).await?;
+    let insert_one_result = collection.insert_one(&user_document, None).await?;
 
     let name = &input.name;
     let surname = &input.surname;
     let username = &input.username;
     let email = &input.email;
     let active = true;
-    let password = &hashed_password;
+    let password = hashed_password;
     let role = "User".to_string();
-
+    let inserted_id = insert_one_result.inserted_id.to_string();
+    let id = doc::get_object_id(&user_document, &inserted_id).unwrap();
+    println!("{:?}", &id);
     let user_json = User {
-        _id: insert_one_result.inserted_id.to_string(),
+        _id: inserted_id,
         name: name.to_string(),
         surname: surname.to_string(),
         username: username.to_string(),

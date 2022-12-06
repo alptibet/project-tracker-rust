@@ -106,7 +106,6 @@ pub struct Claims {
     pub exp: usize,
 }
 
-//
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for AuthenticatedUser {
     type Error = ();
@@ -150,14 +149,6 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                 .get("token")
                 .and_then(|token| token.value().parse().ok());
         }
-
-        // if auth_bearer.is_none() {
-        //     //If there is no auth bearer check for cookie
-
-        // } else {
-        //     //If there is auth bearer use it as token
-
-        // };
 
         match token {
             None => Outcome::Failure((Status::BadRequest, ())),

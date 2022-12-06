@@ -49,7 +49,7 @@ pub async fn insert_one_contractor(
     db: &State<Database>,
     input: Json<ContractorInput>,
 ) -> Result<Json<DocResponse<Contractor>>, AppError> {
-    match contractor::insert_contractor(&db, input).await {
+    match contractor::insert_contractor(db, input).await {
         Ok(_contractor_doc) => Ok(Json(DocResponse {
             message: "success".to_string(),
             data: _contractor_doc,
