@@ -15,7 +15,7 @@ pub async fn get_users(
     db: &State<Database>,
     _auth_user: AuthenticatedUser,
 ) -> Result<Json<VecResponse<User>>, AppError> {
-    match user::find_users(&db).await {
+    match user::find_users(db).await {
         Ok(_user_doc) => Ok(Json(VecResponse {
             message: "success".to_string(),
             data: _user_doc,
@@ -30,7 +30,7 @@ pub async fn get_one_user(
     _id: String,
 ) -> Result<Json<DocResponse<UserId>>, AppError> {
     let oid = parse_oid(_id);
-    match user::match_user_id(&db, oid?).await {
+    match user::match_user_id(db, oid?).await {
         Ok(_user_doc) => {
             if _user_doc.is_none() {
                 return Err(AppError::build(404));
@@ -50,7 +50,7 @@ pub async fn signup(
     input: Json<UserInput>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<MessageResponse>, AppError> {
-    match user::insert_user(&db, input).await {
+    match user::insert_user(db, input).await {
         Ok(_user_doc) => {
             let token = create_send_token(&_user_doc._id);
             cookies.add(token);
@@ -68,7 +68,7 @@ pub async fn login(
     input: Json<LoginInput>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<MessageResponse>, AppError> {
-    let auth_info = match user::find_auth_info(&db, &input.username).await {
+    let auth_info = match user::find_auth_info(db, &input.username).await {
         Ok(_auth_info) => {
             if _auth_info.is_none() {
                 return Err(AppError::build(404));
@@ -94,7 +94,7 @@ pub async fn login(
 }
 
 #[post("/logout")]
-pub fn logout(cookies: &CookieJar<'_>) {
+pub fn logout (cookies: &CookieJar<'_>) {
     cookies.remove(Cookie::named("token"));
 }
 

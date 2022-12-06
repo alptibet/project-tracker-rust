@@ -20,7 +20,7 @@ impl AppError {
             404 => mes = "Not Found or resource does not exit".to_string(),
             500 => mes = "Internal server error".to_string(),
             _ => mes = "Something went wrong".to_string(),
-        }
+        };
         AppError { code, message: mes }
     }
 }

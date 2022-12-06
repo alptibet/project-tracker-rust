@@ -133,7 +133,7 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                     }
                     Err(_error) => false,
                 };
-                return true;
+                true
             } else {
                 false
             }
@@ -149,9 +149,9 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                 .and_then(|token| token.value().parse().ok());
         } else {
             //If there is auth bearer use it as token
-            let bearer: Vec<&str> = auth_bearer.unwrap().split(" ").collect();
+            let bearer: Vec<&str> = auth_bearer.unwrap().split(' ').collect();
             token = Some(bearer[1].to_string());
-        }
+        };
 
         match token {
             None => Outcome::Failure((Status::BadRequest, ())),
@@ -164,4 +164,3 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         }
     }
 }
-

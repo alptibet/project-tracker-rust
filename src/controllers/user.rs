@@ -82,7 +82,7 @@ pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::erro
         active: active.to_string(),
         password: password.to_string(),
         passwordChangeAt: password_created_at.to_string(),
-        role: role.to_string(),
+        role,
     };
     Ok(user_json)
 }
@@ -101,7 +101,7 @@ pub async fn find_auth_info(
     let unwrapped_doc = user_doc.unwrap();
     let auth_info = AuthInfo {
         _id: unwrapped_doc._id.to_string(),
-        password: unwrapped_doc.password.to_string(),
+        password: unwrapped_doc.password,
     };
 
     Ok(Some(auth_info))
