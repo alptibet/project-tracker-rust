@@ -50,10 +50,12 @@ pub async fn insert_one_contractor(
     input: Json<ContractorInput>,
 ) -> Result<Json<DocResponse<Contractor>>, AppError> {
     match contractor::insert_contractor(&db, input).await {
-        Ok(_contractor_doc) => Ok(Json(DocResponse {
+        Ok(_contractor_doc) =>{ 
+            println!("{:?}", _contractor_doc._id);
+            Ok(Json(DocResponse {
             message: "success".to_string(),
             data: _contractor_doc,
-        })),
+        }))},
         Err(_error) => Err(AppError::build(400)),
     }
 }
