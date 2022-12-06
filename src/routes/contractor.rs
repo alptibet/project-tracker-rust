@@ -53,7 +53,7 @@ pub async fn insert_one_contractor(
         Ok(_contractor_doc) => Ok(Json(DocResponse {
             message: "success".to_string(),
             data: _contractor_doc,
-        }))},
+        })),
         Err(_error) => Err(AppError::build(400)),
     }
 }
