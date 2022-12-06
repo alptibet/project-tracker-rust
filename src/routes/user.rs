@@ -86,7 +86,7 @@ pub async fn login(
                     message: "success".to_string(),
                 }))
             } else {
-                return Err(AppError::build(401));
+                Err(AppError::build(401))
             }
         }
         Err(_error) => Err(AppError::build(500)),
