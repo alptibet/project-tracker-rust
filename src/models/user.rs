@@ -133,25 +133,31 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
                     }
                     Err(_error) => false,
                 };
-                return true;
+                true
             } else {
                 false
             }
         }
 
-        let token: Option<String>;
         let auth_bearer = req.headers().get_one("authorization");
-        if auth_bearer.is_none() {
-            //If there is no auth bearer check for cookie
+        let token: Option<String>;
+        if let Some(_auth_bearer) = auth_bearer {
+            let bearer: Vec<&str> = auth_bearer.unwrap().split(' ').collect();
+            token = Some(bearer[1].to_string());
+        } else {
             token = req
                 .cookies()
                 .get("token")
                 .and_then(|token| token.value().parse().ok());
-        } else {
-            //If there is auth bearer use it as token
-            let bearer: Vec<&str> = auth_bearer.unwrap().split(" ").collect();
-            token = Some(bearer[1].to_string());
         }
+
+        // if auth_bearer.is_none() {
+        //     //If there is no auth bearer check for cookie
+
+        // } else {
+        //     //If there is auth bearer use it as token
+
+        // };
 
         match token {
             None => Outcome::Failure((Status::BadRequest, ())),
@@ -164,4 +170,3 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         }
     }
 }
-

@@ -13,14 +13,13 @@ pub struct AppError {
 
 impl AppError {
     pub fn build(code: u16) -> AppError {
-        let mes: String;
-        match code {
-            400 => mes = "Bad Request".to_string(),
-            401 => mes = "Unauthorized access".to_string(),
-            404 => mes = "Not Found or resource does not exit".to_string(),
-            500 => mes = "Internal server error".to_string(),
-            _ => mes = "Something went wrong".to_string(),
-        }
+        let mes = match code {
+            400 => "Bad Request".to_string(),
+            401 => "Unauthorized access".to_string(),
+            404 => "Not Found or resource does not exit".to_string(),
+            500 => "Internal server error".to_string(),
+            _ => "Something went wrong".to_string(),
+        };
         AppError { code, message: mes }
     }
 }

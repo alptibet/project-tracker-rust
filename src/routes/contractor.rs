@@ -15,7 +15,7 @@ use crate::models::response::VecResponse;
 pub async fn get_contractors(
     db: &State<Database>,
 ) -> Result<Json<VecResponse<Contractor>>, AppError> {
-    match contractor::find_contractors(&db).await {
+    match contractor::find_contractors(db).await {
         Ok(_contractor_doc) => Ok(Json(VecResponse {
             message: "success".to_string(),
             data: _contractor_doc,
@@ -30,7 +30,7 @@ pub async fn get_one_contractor(
     _id: String,
 ) -> Result<Json<DocResponse<Contractor>>, AppError> {
     let oid = parse_oid(_id);
-    match contractor::find_one_contractor(&db, oid?).await {
+    match contractor::find_one_contractor(db, oid?).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
@@ -50,9 +50,7 @@ pub async fn insert_one_contractor(
     input: Json<ContractorInput>,
 ) -> Result<Json<DocResponse<Contractor>>, AppError> {
     match contractor::insert_contractor(&db, input).await {
-        Ok(_contractor_doc) =>{ 
-            println!("{:?}", _contractor_doc._id);
-            Ok(Json(DocResponse {
+        Ok(_contractor_doc) => Ok(Json(DocResponse {
             message: "success".to_string(),
             data: _contractor_doc,
         }))},
@@ -66,7 +64,7 @@ pub async fn delete_one_contractor(
     _id: String,
 ) -> Result<Json<MessageResponse>, AppError> {
     let oid = parse_oid(_id);
-    match contractor::delete_contractor(&db, oid?).await {
+    match contractor::delete_contractor(db, oid?).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));
@@ -86,7 +84,7 @@ pub async fn update_one_contractor(
     input: Json<ContractorInput>,
 ) -> Result<Json<DocResponse<Contractor>>, AppError> {
     let oid = parse_oid(_id);
-    match contractor::update_contractor(&db, oid?, input).await {
+    match contractor::update_contractor(db, oid?, input).await {
         Ok(_contractor_doc) => {
             if _contractor_doc.is_none() {
                 return Err(AppError::build(404));

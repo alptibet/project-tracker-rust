@@ -7,7 +7,7 @@ use std::env;
 use crate::models::user::Claims;
 
 pub fn create_send_token<'a>(_id: &str) -> Cookie<'a> {
-    Cookie::build("token", sign_token(&_id))
+    Cookie::build("token", sign_token(_id))
         .path("/")
         .secure(false)
         .http_only(true)

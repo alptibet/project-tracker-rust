@@ -14,7 +14,7 @@ pub async fn get_users(
     db: &State<Database>,
     _auth_user: AuthenticatedUser,
 ) -> Result<Json<VecResponse<User>>, AppError> {
-    match user::find_users(&db).await {
+    match user::find_users(db).await {
         Ok(_user_doc) => Ok(Json(VecResponse {
             message: "success".to_string(),
             data: _user_doc,
@@ -29,7 +29,7 @@ pub async fn get_one_user(
     _id: String,
 ) -> Result<Json<DocResponse<UserId>>, AppError> {
     let oid = parse_oid(_id);
-    match user::match_user_id(&db, oid?).await {
+    match user::match_user_id(db, oid?).await {
         Ok(_user_doc) => {
             if _user_doc.is_none() {
                 return Err(AppError::build(404));
@@ -49,7 +49,7 @@ pub async fn signup(
     input: Json<UserInput>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<MessageResponse>, AppError> {
-    match user::insert_user(&db, input).await {
+    match user::insert_user(db, input).await {
         Ok(_user_doc) => {
             println!("{:?}", _user_doc._id);
             let token = create_send_token(&_user_doc._id);
@@ -68,7 +68,7 @@ pub async fn login(
     input: Json<LoginInput>,
     cookies: &CookieJar<'_>,
 ) -> Result<Json<MessageResponse>, AppError> {
-    let auth_info = match user::find_auth_info(&db, &input.username).await {
+    let auth_info = match user::find_auth_info(db, &input.username).await {
         Ok(_auth_info) => {
             if _auth_info.is_none() {
                 return Err(AppError::build(404));
@@ -86,7 +86,7 @@ pub async fn login(
                     message: "success".to_string(),
                 }))
             } else {
-                return Err(AppError::build(401));
+                Err(AppError::build(401))
             }
         }
         Err(_error) => Err(AppError::build(500)),

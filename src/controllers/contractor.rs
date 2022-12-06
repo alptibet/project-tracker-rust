@@ -41,7 +41,7 @@ pub async fn find_one_contractor(
     let unwrapped_doc = contractor_doc.unwrap();
     let contractor_json = Contractor {
         _id: unwrapped_doc._id.to_string(),
-        name: unwrapped_doc.name.to_string(),
+        name: unwrapped_doc.name,
     };
 
     Ok(Some(contractor_json))
@@ -100,7 +100,7 @@ pub async fn update_contractor(
     let unwrapped_doc = contractor_doc.unwrap();
     let contractor_json = Contractor {
         _id: unwrapped_doc._id.to_string(),
-        name: unwrapped_doc.name.to_string(),
+        name: unwrapped_doc.name,
     };
 
     Ok(Some(contractor_json))
