@@ -1,17 +1,12 @@
+use crate::models::user::{
+    AuthInfo, User, UserDocument, UserId, UserIdDocument, UserInput, UserRole,
+};
 use bcrypt::hash;
 use futures::stream::TryStreamExt;
 use mongodb::bson::oid::ObjectId;
 use mongodb::bson::{doc, DateTime, Document};
-use mongodb::bson::document::Document as doc;
 use mongodb::Database;
 use rocket::serde::json::Json;
-
-use crate::models::user::User;
-use crate::models::user::UserDocument;
-use crate::models::user::UserId;
-use crate::models::user::UserInput;
-use crate::models::user::UserRole;
-use crate::models::user::{AuthInfo, UserIdDocument};
 
 pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
     let collection = db.collection::<UserDocument>("users");
@@ -73,17 +68,14 @@ pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::erro
     let active = true;
     let password = hashed_password;
     let role = "User".to_string();
-    let inserted_id = insert_one_result.inserted_id.to_string();
-    let id = doc::get_object_id(&user_document, &inserted_id).unwrap();
-    println!("{:?}", &id);
     let user_json = User {
-        _id: inserted_id,
+        _id: insert_one_result.inserted_id.to_string(),
         name: name.to_string(),
         surname: surname.to_string(),
         username: username.to_string(),
         email: email.to_string(),
         active: active.to_string(),
-        password: password.to_string(),
+        password,
         passwordChangeAt: password_created_at.to_string(),
         role,
     };

@@ -52,8 +52,16 @@ pub async fn signup(
 ) -> Result<Json<MessageResponse>, AppError> {
     match user::insert_user(db, input).await {
         Ok(_user_doc) => {
-            let token = create_send_token(&_user_doc._id);
-            cookies.add(token);
+            match user::find_auth_info(db, &_user_doc.username).await {
+                Ok(_auth_info) => {
+                    if _auth_info.is_none() {
+                        return Err(AppError::build(400));
+                    }
+                    let token = create_send_token(&_auth_info.unwrap()._id);
+                    cookies.add(token);
+                }
+                Err(_error) => (),
+            }
             Ok(Json(MessageResponse {
                 message: "success".to_string(),
             }))
