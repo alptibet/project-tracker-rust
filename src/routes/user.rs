@@ -24,10 +24,11 @@ pub async fn get_users(
     }
 }
 
-#[get("/<_id>")] //deneme amacli sadece id bulmak icin
+#[get("/<_id>")] //Must fix this to return user
 pub async fn get_one_user(
     db: &State<Database>,
     _id: String,
+    _auth_user:AuthenticatedUser
 ) -> Result<Json<DocResponse<UserId>>, AppError> {
     let oid = parse_oid(_id);
     match user::match_user_id(db, oid?).await {

@@ -104,7 +104,6 @@ pub async fn find_auth_info(
 
 pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<UserId>> {
     let collection = db.collection::<UserIdDocument>("users");
-
     let user_doc = collection.find_one(doc! {"_id":oid}, None).await?;
     if user_doc.is_none() {
         return Ok(None);
@@ -115,3 +114,4 @@ pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Resu
     };
     Ok(Some(user_json))
 }
+
