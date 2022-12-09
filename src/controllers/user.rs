@@ -25,12 +25,12 @@ pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
         let userrole = result.role;
         let user_json = User {
             _id: _id.to_string(),
-            name: name.to_string(),
-            surname: surname.to_string(),
-            username: username.to_string(),
-            email: email.to_string(),
+            name,
+            surname,
+            username,
+            email,
             active: active.to_string(),
-            password: password.to_string(),
+            password,
             passwordChangeAt: password_change_at.to_string(),
             role: match userrole {
                 UserRole::Admin => "Admin".to_string(),
@@ -44,6 +44,32 @@ pub async fn find_users(db: &Database) -> mongodb::error::Result<Vec<User>> {
     Ok(users)
 }
 
+pub async fn find_one_user(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<User>> {
+    let collection = db.collection::<UserDocument>("users");
+
+    let user_doc = collection.find_one(doc! {"_id":oid}, None).await?;
+    if user_doc.is_none() {
+        return Ok(None);
+    }
+    let unwrapped_doc = user_doc.unwrap();
+    let user_json = User {
+        _id: unwrapped_doc._id.to_string(),
+        username: unwrapped_doc.username,
+        name: unwrapped_doc.name,
+        surname: unwrapped_doc.surname,
+        email: unwrapped_doc.email,
+        password: unwrapped_doc.password,
+        active: unwrapped_doc.active.to_string(),
+        passwordChangeAt: unwrapped_doc.passwordChangeAt.to_string(),
+        role: match unwrapped_doc.role {
+            UserRole::Admin => "Admin".to_string(),
+            UserRole::User => "User".to_string(),
+            UserRole::Superuser => "Superuser".to_string(),
+        },
+    };
+
+    Ok(Some(user_json))
+}
 pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::error::Result<User> {
     let collection = db.collection::<Document>("users");
     let password_created_at: DateTime = DateTime::now();
@@ -114,4 +140,3 @@ pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Resu
     };
     Ok(Some(user_json))
 }
-

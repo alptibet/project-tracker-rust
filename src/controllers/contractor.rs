@@ -20,7 +20,7 @@ pub async fn find_contractors(db: &Database) -> mongodb::error::Result<Vec<Contr
         let name = result.name;
         let contractor_json = Contractor {
             _id: _id.to_string(),
-            name: name.to_string(),
+            name,
         };
         contractors.push(contractor_json);
     }

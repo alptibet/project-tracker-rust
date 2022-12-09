@@ -8,7 +8,7 @@ use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
 use crate::models::response::{DocResponse, MessageResponse, VecResponse};
-use crate::models::user::{AuthenticatedUser, LoginInput, User, UserId, UserInput};
+use crate::models::user::{AuthenticatedUser, LoginInput, User, UserInput};
 
 #[get("/get-all")]
 pub async fn get_users(
@@ -29,9 +29,9 @@ pub async fn get_one_user(
     db: &State<Database>,
     _id: String,
     _auth_user:AuthenticatedUser
-) -> Result<Json<DocResponse<UserId>>, AppError> {
+) -> Result<Json<DocResponse<User>>, AppError> {
     let oid = parse_oid(_id);
-    match user::match_user_id(db, oid?).await {
+    match user::find_one_user(db, oid?).await {
         Ok(_user_doc) => {
             if _user_doc.is_none() {
                 return Err(AppError::build(404));
