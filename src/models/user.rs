@@ -95,9 +95,7 @@ pub struct LoginInput {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 
-pub struct AuthenticatedUser {
-    pub _id: String,
-}
+pub struct AuthenticatedUser;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -153,11 +151,10 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         match token {
             None => Outcome::Failure((Status::BadRequest, ())),
             Some(_token) if is_valid_token(db, &_token).await => {
-                Outcome::Success(AuthenticatedUser {
-                    _id: "_token".to_string(),
-                })
+                Outcome::Success(AuthenticatedUser)
             }
             Some(_) => Outcome::Failure((Status::Unauthorized, ())),
         }
     }
 }
+

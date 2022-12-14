@@ -70,6 +70,7 @@ pub async fn find_one_user(db: &Database, oid: ObjectId) -> mongodb::error::Resu
 
     Ok(Some(user_json))
 }
+
 pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::error::Result<User> {
     let collection = db.collection::<Document>("users");
     let password_created_at: DateTime = DateTime::now();
@@ -140,3 +141,4 @@ pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Resu
     };
     Ok(Some(user_json))
 }
+

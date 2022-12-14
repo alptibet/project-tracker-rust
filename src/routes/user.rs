@@ -24,11 +24,11 @@ pub async fn get_users(
     }
 }
 
-#[get("/<_id>")] //Must fix this to return user
+#[get("/<_id>")]
 pub async fn get_one_user(
     db: &State<Database>,
     _id: String,
-    _auth_user:AuthenticatedUser
+    _auth_user: AuthenticatedUser,
 ) -> Result<Json<DocResponse<User>>, AppError> {
     let oid = parse_oid(_id);
     match user::find_one_user(db, oid?).await {
@@ -114,3 +114,4 @@ fn parse_oid(_id: String) -> Result<ObjectId, AppError> {
         Err(_error) => Err(AppError::build(400)),
     }
 }
+
