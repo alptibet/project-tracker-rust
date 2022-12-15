@@ -8,7 +8,7 @@ use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
 use crate::models::response::{DocResponse, MessageResponse, VecResponse};
-use crate::models::user::{AuthenticatedUser, LoginInput, User, UserInput};
+use crate::models::user::{AuthenticatedUser, LoginInput, User, UserId, UserInput};
 
 #[get("/get-all")]
 pub async fn get_users(
@@ -107,6 +107,29 @@ pub fn logout(cookies: &CookieJar<'_>) {
     cookies.remove(Cookie::named("token"));
 }
 
+#[delete("/deactivate", data = "<input>")]
+pub async fn deactivate(
+    db: &State<Database>,
+    input: Json<UserId>,
+    cookies: &CookieJar<'_>,
+    _auth_user: AuthenticatedUser,
+) -> Result<Json<DocResponse<User>>, AppError> {
+    let oid = parse_oid(input._id.clone());
+    match user::deactivate_user(db, oid?).await {
+        Ok(_user_doc) => {
+            if _user_doc.is_none() {
+                return Err(AppError::build(404));
+            }
+            cookies.remove(Cookie::named("token"));
+            Ok(Json(DocResponse {
+                message: "success".to_string(),
+                data: _user_doc.unwrap(),
+            }))
+        }
+        Err(_error) => Err(AppError::build(404)),
+    }
+}
+
 fn parse_oid(_id: String) -> Result<ObjectId, AppError> {
     let oid = ObjectId::parse_str(&_id);
     match oid {
@@ -114,4 +137,3 @@ fn parse_oid(_id: String) -> Result<ObjectId, AppError> {
         Err(_error) => Err(AppError::build(400)),
     }
 }
-

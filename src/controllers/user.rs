@@ -5,6 +5,7 @@ use bcrypt::hash;
 use futures::stream::TryStreamExt;
 use mongodb::bson::oid::ObjectId;
 use mongodb::bson::{doc, DateTime, Document};
+use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::Database;
 use rocket::serde::json::Json;
 
@@ -109,6 +110,41 @@ pub async fn insert_user(db: &Database, input: Json<UserInput>) -> mongodb::erro
     Ok(user_json)
 }
 
+pub async fn deactivate_user(db: &Database, oid: ObjectId) -> mongodb::error::Result<Option<User>> {
+    let collection = db.collection::<UserDocument>("users");
+    let update_options = FindOneAndUpdateOptions::builder()
+        .return_document(ReturnDocument::After)
+        .build();
+    let user_doc = collection
+        .find_one_and_update(
+            doc! {"_id":oid},
+            doc! {"$set":{"active": false}},
+            update_options,
+        )
+        .await?;
+    if user_doc.is_none() {
+        return Ok(None);
+    }
+    let unwrapped_doc = user_doc.unwrap();
+    let user_json = User {
+        _id: unwrapped_doc._id.to_string(),
+        username: unwrapped_doc.username,
+        name: unwrapped_doc.name,
+        surname: unwrapped_doc.surname,
+        email: unwrapped_doc.email,
+        password: unwrapped_doc.password,
+        active: unwrapped_doc.active.to_string(),
+        passwordChangeAt: unwrapped_doc.passwordChangeAt.to_string(),
+        role: match unwrapped_doc.role {
+            UserRole::Admin => "Admin".to_string(),
+            UserRole::User => "User".to_string(),
+            UserRole::Superuser => "Superuser".to_string(),
+        },
+    };
+
+    Ok(Some(user_json))
+}
+
 pub async fn find_auth_info(
     db: &Database,
     username: &str,
@@ -141,4 +177,3 @@ pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Resu
     };
     Ok(Some(user_json))
 }
-
