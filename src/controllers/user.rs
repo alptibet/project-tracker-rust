@@ -52,6 +52,7 @@ pub async fn find_one_user(db: &Database, oid: ObjectId) -> mongodb::error::Resu
     if user_doc.is_none() {
         return Ok(None);
     }
+
     let unwrapped_doc = user_doc.unwrap();
     let user_json = User {
         _id: unwrapped_doc._id.to_string(),
@@ -118,7 +119,7 @@ pub async fn deactivate_user(db: &Database, oid: ObjectId) -> mongodb::error::Re
     let user_doc = collection
         .find_one_and_update(
             doc! {"_id":oid},
-            doc! {"$set":{"active": false}},
+            doc! {"$set": {"active": false}},
             update_options,
         )
         .await?;
@@ -177,3 +178,4 @@ pub async fn match_user_id(db: &Database, oid: ObjectId) -> mongodb::error::Resu
     };
     Ok(Some(user_json))
 }
+

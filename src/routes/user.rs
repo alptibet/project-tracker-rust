@@ -1,14 +1,13 @@
-use mongodb::bson::oid::ObjectId;
-use mongodb::Database;
-use rocket::http::{Cookie, CookieJar};
-use rocket::serde::json::Json;
-use rocket::State;
-
 use crate::controllers::auth::{check_password, create_send_token};
 use crate::controllers::user;
 use crate::errors::apperror::AppError;
 use crate::models::response::{DocResponse, MessageResponse, VecResponse};
 use crate::models::user::{AuthenticatedUser, LoginInput, User, UserId, UserInput};
+use mongodb::bson::oid::ObjectId;
+use mongodb::Database;
+use rocket::http::{Cookie, CookieJar};
+use rocket::serde::json::Json;
+use rocket::State;
 
 #[get("/get-all")]
 pub async fn get_users(
