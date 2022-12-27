@@ -94,7 +94,6 @@ pub struct LoginInput {
 #[allow(non_snake_case)]
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
-
 pub struct AuthenticatedUser;
 
 #[derive(Debug, Serialize, Deserialize)]
