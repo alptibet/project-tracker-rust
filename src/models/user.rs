@@ -156,4 +156,3 @@ impl<'r> FromRequest<'r> for AuthenticatedUser {
         }
     }
 }
-
